@@ -10,7 +10,7 @@ import pandas as pd
 
 from config.logger import get_logger
 from config.settings import S3_SILVER, S3_GOLD, validar_config
-from quality.validations import relatorio_consolidado, validar_tabela
+from quality.validations import bloquear_se_reprovado, relatorio_consolidado, validar_tabela
 
 log = get_logger("gold")
 
@@ -111,6 +111,7 @@ def main() -> None:
     resultados.append(validar_tabela(fato, "fato_alfabetizacao", ["id_municipio", "ano"]))
 
     # Escrita
+    bloquear_se_reprovado(resultados)  # Bug C: falha de qualidade bloqueia a promocao
     gravar_gold(dim_uf, "dim_uf")
     gravar_gold(dim_municipio, "dim_municipio")
     gravar_gold(dim_tempo, "dim_tempo")
