@@ -8,7 +8,7 @@ log = get_logger("views")
 VIEWS = {
     "vw_regiao_ano": """
         SELECT u.regiao, f.ano,
-          COUNT(*) AS municipios,
+          COUNT(*) AS qtd_municipios,
           ROUND(AVG(f.taxa_realizada), 1) AS taxa_media,
           ROUND(AVG(f.meta), 1) AS meta_media,
           ROUND(AVG(f.gap_meta), 1) AS gap_medio,
@@ -21,7 +21,7 @@ VIEWS = {
     """,
     "vw_uf_ano": """
         SELECT u.sigla_uf, u.regiao, f.ano,
-          COUNT(*) AS municipios,
+          COUNT(*) AS qtd_municipios,
           ROUND(AVG(f.taxa_realizada), 1) AS taxa_media,
           ROUND(AVG(f.meta), 1) AS meta_media,
           ROUND(AVG(f.gap_meta), 1) AS gap_medio,
