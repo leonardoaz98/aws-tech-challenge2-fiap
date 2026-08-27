@@ -32,13 +32,16 @@ flowchart LR
     BRONZE["bronze - raw e streaming"]
     SILVER["silver - tratado e integrado"]
     GOLD["gold - star schema"]
-    ATHENA["Athena e Glue - 5 tabelas e 3 views"]
-    DASH["Streamlit e Plotly - dashboard"]
-    BD -->|batch| B --> BRONZE
-    BD -->|streaming| S --> BRONZE
-    BRONZE -->|build_silver.py| SILVER
-    SILVER -->|build_gold.py| GOLD
-    GOLD --> ATHENA --> DASH
+    ATHENA["Athena e Glue"]
+    DASH["Streamlit e Plotly"]
+    BD -->|batch| B
+    BD -->|streaming| S
+    B --> BRONZE
+    S --> BRONZE
+    BRONZE -->|build_silver| SILVER
+    SILVER -->|build_gold| GOLD
+    GOLD --> ATHENA
+    ATHENA --> DASH
 ```
 
 ### Fluxo de dados
