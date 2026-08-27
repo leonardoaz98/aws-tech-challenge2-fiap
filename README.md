@@ -26,26 +26,14 @@ Pipeline híbrida sobre arquitetura Medalhão (Bronze → Silver → Gold), 100%
 
 ```mermaid
 flowchart LR
-    subgraph FONTE["Fontes"]
-        BD[("Base dos Dados<br/>INEP/IBGE<br/>UF, Municipio,<br/>Metas, Alunos")]
-    end
-
-    subgraph INGEST["Ingestao"]
-        B["ingest_bronze.py<br/>(batch)"]
-        S["streaming_producer.py<br/>(streaming)"]
-    end
-
-    subgraph S3["Data Lake - Amazon S3"]
-        BRONZE["bronze/<br/>raw + streaming"]
-        SILVER["silver/<br/>tratado + integrado"]
-        GOLD["gold/<br/>star schema"]
-    end
-
-    subgraph CONSUMO["Consumo"]
-        ATHENA["Athena + Glue<br/>5 tabelas + 3 views"]
-        DASH["Streamlit + Plotly<br/>dashboard"]
-    end
-
+    BD["Base dos Dados - INEP e IBGE"]
+    B["ingest_bronze.py - batch"]
+    S["streaming_producer.py - streaming"]
+    BRONZE["bronze - raw e streaming"]
+    SILVER["silver - tratado e integrado"]
+    GOLD["gold - star schema"]
+    ATHENA["Athena e Glue - 5 tabelas e 3 views"]
+    DASH["Streamlit e Plotly - dashboard"]
     BD -->|batch| B --> BRONZE
     BD -->|streaming| S --> BRONZE
     BRONZE -->|build_silver.py| SILVER
