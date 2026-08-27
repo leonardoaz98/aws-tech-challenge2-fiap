@@ -13,6 +13,7 @@ from config.settings import (
     ANOS_META, S3_BRONZE, S3_SILVER, TABELAS_SEM_ANO, validar_config,
 )
 from quality.validations import (
+    bloquear_se_reprovado,
     relatorio_consolidado, validar_integridade_referencial, validar_tabela,
 )
 
@@ -38,7 +39,9 @@ def padronizar(df: pd.DataFrame) -> pd.DataFrame:
         df["sigla_uf"] = df["sigla_uf"].astype(str).str.strip().str.upper()
     if "ano" in df.columns:
         df["ano"] = pd.to_numeric(df["ano"], errors="coerce").astype("Int64")
-    for col in ["rede", "serie"]:
+    if "rede" in df.columns:
+        df["rede"] = pd.to_numeric(df["rede"], errors="coerce").astype("Int64").astype(str).str.strip()
+    for col in ["serie"]:
         if col in df.columns:
             df[col] = df[col].astype(str).str.strip().str.lower()
     return df
@@ -97,6 +100,8 @@ def main() -> None:
     meta_mun = unpivot_metas(padronizar(ler_bronze("meta_alfabetizacao_municipio")), chaves_mun, "municipio")
     meta_uf = unpivot_metas(padronizar(ler_bronze("meta_alfabetizacao_uf")), ["sigla_uf"] + chaves_comuns, "uf")
     meta_br = unpivot_metas(padronizar(ler_bronze("meta_alfabetizacao_brasil")), chaves_comuns, "brasil")
+    meta_mun = meta_mun.drop_duplicates(subset=["id_municipio", "ano_meta"]).reset_index(drop=True)
+    meta_uf = meta_uf.drop_duplicates(subset=["sigla_uf", "ano_meta"]).reset_index(drop=True)
 
     resultados.append(validar_tabela(meta_mun, "meta_municipio", ["id_municipio", "ano_meta"]))
     resultados.append(validar_tabela(meta_uf, "meta_uf", ["sigla_uf", "ano_meta"]))
@@ -104,6 +109,7 @@ def main() -> None:
     validar_integridade_referencial(meta_mun, "meta_municipio", municipio, "id_municipio")
     validar_integridade_referencial(meta_uf, "meta_uf", uf, "sigla_uf")
 
+    bloquear_se_reprovado(resultados)  # Bug C: falha de qualidade bloqueia a promocao
     gravar_s3(municipio, "municipio_resultado")
     gravar_s3(uf, "uf_resultado")
     gravar_s3(meta_mun, "meta_municipio")
