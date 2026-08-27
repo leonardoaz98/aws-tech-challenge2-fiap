@@ -90,6 +90,8 @@ Star schema (Kimball) pronto para dashboards, análise estatística e ML:
 | `dim_nivel` | nivel_alfabetizacao | 6 |
 | `fato_alfabetizacao` | id_municipio + ano | 43.008 |
 
+> **Sobre o volume da `fato_alfabetizacao` (43.008 linhas):** a tabela cobre 8 anos (2023–2030) no grão município+ano, sem duplicatas. 2023 e 2024 trazem resultados aferidos (5.448 municípios cada); de 2025 a 2030 há apenas as metas (5.352 cada), por serem anos-alvo do Compromisso Nacional. Composição: 5.448 + 5.448 + (5.352 × 6) = 43.008. O horizonte até 2030 é intencional — permite comparar resultado × meta e acompanhar a trajetória rumo à universalização.
+
 **Views analíticas** (consumidas pelo dashboard): `vw_uf_ano`, `vw_regiao_ano`, `vw_municipio` — indicador de alfabetização, comparação metas × resultados e evolução temporal.
 
 ---
