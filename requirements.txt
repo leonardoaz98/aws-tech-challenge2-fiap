@@ -1,0 +1,18 @@
+# Dependencias do pipeline (ingestao, camadas e qualidade).
+# O dashboard tem requirements proprio em dashboard/requirements.txt,
+# enxuto para o deploy no Streamlit Cloud.
+
+# Ingestao da fonte publica (Base dos Dados, hospedada no BigQuery)
+basedosdados>=2.0
+pandas-gbq>=0.22
+
+# AWS - S3, Athena e Glue Catalog
+awswrangler>=3.5
+boto3>=1.34
+
+# Processamento
+pandas>=2.0
+pyarrow>=14.0
+
+# Configuracao
+python-dotenv>=1.0

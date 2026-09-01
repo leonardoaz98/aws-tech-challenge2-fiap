@@ -1,6 +1,33 @@
+# Ambiente virtual
+.venv/
+venv/
+
+# Python
 __pycache__/
 *.pyc
-.venv/
+*.egg-info/
+build/
+dist/
+
+# Credenciais — chaves de acesso e segredos
 .env
+*-key.json
+*credentials*.json
+.aws/
+.streamlit/secrets.toml
+
+# Dados locais (as camadas vivem no S3)
+data/
 *.parquet
-.DS_Store
+*.csv
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Editor
+.vscode/
+.idea/
+
+# Contexto de ferramenta (nao faz parte da entrega)
+CLAUDE.md
+TAREFA.md
