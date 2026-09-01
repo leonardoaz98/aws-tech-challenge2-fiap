@@ -28,7 +28,7 @@ Pipeline híbrida sobre arquitetura Medalhão (Bronze → Silver → Gold), 100%
 flowchart LR
     BD["Base dos Dados - INEP e IBGE"]
     B["ingest_bronze.py - batch"]
-    S["streaming_producer.py - streaming"]
+    S["ingestion/streaming - eventos"]
     BRONZE["bronze - raw e streaming"]
     SILVER["silver - tratado e integrado"]
     GOLD["gold - star schema"]
@@ -47,7 +47,7 @@ flowchart LR
 ### Fluxo de dados
 
 1. **Batch** — `ingest_bronze.py` baixa as tabelas da Base dos Dados e grava Parquet na Bronze (S3), sem transformações.
-2. **Streaming** — `streaming_producer.py` simula eventos em tempo quase real, gravando micro-batches particionados por data/hora em `bronze/streaming/`.
+2. **Streaming** — `ingestion/streaming/producer.py` simula eventos em tempo quase real, gravando micro-batches particionados por data/hora em `bronze/streaming/`. A promoção para a Silver, com deduplicação por `id_evento`, fica em `layers/silver/build_streaming.py`.
 3. **Silver** — `build_silver.py` lê a Bronze do S3, limpa, padroniza chaves, faz *unpivot* das metas (wide → long), valida qualidade e integridade referencial, e grava a Silver no S3.
 4. **Gold** — `build_gold.py` lê a Silver, monta o modelo dimensional (fato + dimensões) e grava a Gold no S3.
 5. **Consumo** — Athena cataloga a Gold via Glue e serve as views; o dashboard Streamlit consulta via `awswrangler`.
@@ -142,20 +142,23 @@ A camada Gold, com grão município + ano e dimensões territoriais, habilita:
 ## 9. Estrutura do repositório
 
 ```
-config/                    settings (AWS) + logger
-ingestion/batch/           ingest_bronze.py (camada Bronze)
-layers/
-  bronze/                  README da camada
-  silver/                  build_silver.py
-  gold/                    build_gold.py + build_views.py
-quality/                   validations.py (qualidade + integridade)
-dashboard/                 app.py (Streamlit -> Athena)
-docs/evidencias/           prints de execucao
-export_gold_to_s3.py       materializacao da Gold no S3
-export_silver_to_s3.py     materializacao da Silver no S3
-streaming_producer.py      ingestao streaming (simulada)
-.env.example               variaveis de ambiente
+├── config/                    configuração central (AWS) e logger padronizado
+├── ingestion/
+│   ├── batch/                 ingestão das fontes históricas na Bronze
+│   └── streaming/             producer de eventos + documentação do design
+├── layers/
+│   ├── bronze/                documentação da zona raw
+│   ├── silver/                tratamento, integração e promoção do streaming
+│   └── gold/                  modelo dimensional e views analíticas
+├── quality/                   validações reutilizáveis entre camadas
+├── dashboard/                 aplicação Streamlit sobre o Athena
+├── scripts/migracao/          export GCP → AWS (histórico da migração)
+└── docs/                      decisões arquiteturais e evidências
 ```
+
+> Os scripts em `scripts/migracao/` documentam o caminho de migração da
+> plataforma e não fazem parte do pipeline corrente — a Gold hoje é
+> construída direto na AWS por `layers/gold/build_gold.py`.
 
 ---
 
@@ -167,22 +170,27 @@ streaming_producer.py      ingestao streaming (simulada)
 git clone https://github.com/leonardoaz98/aws-tech-challenge2-fiap.git
 cd aws-tech-challenge2-fiap
 
-pip install awswrangler boto3 pandas streamlit plotly basedosdados python-dotenv
+pip install -r requirements.txt
 cp .env.example .env        # preencher as variaveis
 aws configure               # us-east-1, json
 
-# Pipeline batch (Medalhao)
-python3 ingestion/batch/ingest_bronze.py    # Bronze
-python3 layers/silver/build_silver.py       # Silver
-python3 layers/gold/build_gold.py           # Gold
-python3 layers/gold/build_views.py          # Views no Athena
+# Pipeline batch (Arquitetura Medalhao)
+python3 -m ingestion.batch.ingest_bronze     # Bronze
+python3 -m layers.silver.build_silver        # Silver
+python3 -m layers.gold.build_gold            # Gold — fato e dimensoes
+python3 -m layers.gold.build_views           # Gold — views no Athena
 
-# Streaming (evidencia de execucao)
-python3 streaming_producer.py --batches 10 --intervalo 2
+# Pipeline streaming
+python3 -m ingestion.streaming.producer --batches 8 --intervalo 3
+python3 -m layers.silver.build_streaming     # promocao para a Silver
 
 # Dashboard
+pip install -r dashboard/requirements.txt
 streamlit run dashboard/app.py
 ```
+
+> Todos os scripts rodam como módulo (`python3 -m`) a partir da raiz do
+> projeto, que é o que permite os imports de `config` e `quality`.
 
 ---
 
