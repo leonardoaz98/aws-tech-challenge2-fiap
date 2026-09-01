@@ -1,0 +1,9 @@
+# Dependencias exclusivas do deploy do dashboard.
+# Mantido separado do pipeline: o app so le a Gold via Athena, nao ingere
+# dado nem consulta a fonte publica.
+streamlit>=1.32
+pandas>=2.0
+plotly>=5.20
+awswrangler>=3.5
+boto3>=1.34
+python-dotenv>=1.0
