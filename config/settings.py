@@ -51,6 +51,14 @@ TABELAS_SEM_ANO = {
     "dicionario",
 }
 
+# Ultimo ano com resultado medido do Saeb. Separa a serie realizada da
+# trajetoria de metas: ate este ano ha taxa apurada; a partir do seguinte,
+# apenas meta pactuada ate 2030.
+ANO_ULTIMO_RESULTADO = 2024
+
+# Prefixo da zona de streaming dentro da Bronze, separada do batch
+S3_BRONZE_STREAMING = f"{S3_BRONZE}/streaming"
+
 
 def validar_config() -> None:
     """Falha cedo se alguma variavel obrigatoria estiver ausente."""
